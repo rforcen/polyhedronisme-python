@@ -1,2 +1,2 @@
 # polyhedronisme-python
-python post of polyhedronisme
+python port of polyhedronisme
