@@ -1,4 +1,4 @@
-from vector import vector
+from geo import *
 from color import color
 
 
@@ -9,7 +9,7 @@ class polyhedron():
     normals = []
     areas = []
     colors = []
-    centersArray = []
+    centers = []
 
     def __init__(self, name='', vertices=[], faces=[]):
         if vertices != []:
@@ -17,14 +17,18 @@ class polyhedron():
             self.vertices = vertices
             # self.scale_vertices()
             self.faces = faces
+            self.refresh()
 
-            self.normals = [vector.normal(self.vertices[face[0]], self.vertices[face[1]], self.vertices[face[2]]).list()
-                            for
-                            face in self.faces]  # face normal
-            self.areas = [self.planararea(f) for f in self.faces]  # face area
+    def refresh(self):
+        self.normals = self.calc_normals()
+        self.areas = [self.planararea(f) for f in self.faces]  # face area
 
-            self.calc_colors()
-            self.centers()
+        self.calc_colors()
+        self.calc_centers()
+
+    def calc_normals(self):
+        return [unit(orthogonal(self.vertices[face[0]], self.vertices[face[1]], self.vertices[face[2]]))
+                for face in self.faces]  # face normal
 
     def scale_vertices(self):
         _max = max(max(self.vertices))
@@ -37,32 +41,32 @@ class polyhedron():
     def calc_colors(self):
         color_dict = {}  # generate color dict
         for a in self.areas:
-            k = vector.sigfigs(a)
+            k = sigfigs(a)
             if k not in color_dict:
                 color_dict[k] = color.hextofloats(color.get_item(len(color_dict)))
-        self.colors = [color_dict[vector.sigfigs(a)] for a in self.areas]
+        self.colors = [color_dict[sigfigs(a)] for a in self.areas]
 
     def update_colors(self):
         self.calc_colors()
 
     def planararea(self, face):
-        vsum = vector([0., 0., 0.])
+        vsum = [0., 0., 0.]
         vertices = [self.vertices[ic] for ic in face]
-        v1, v2 = vector(vertices[-2]), vector(vertices[-1])
+        v1, v2 = vertices[-2:]
         for v3 in vertices:
-            vsum = vsum + v1.cross(v2)
-            v1, v2 = v2, vector(v3)
-        return abs(vector.dot(vector.normal_vertex(vertices), vsum) / 2.)
+            vsum = add(vsum, cross(v1, v2))
+            v1, v2 = v2, v3
+        return abs(dot(calc_normal(vertices), vsum)) / 2.
 
-    def centers(self):
-        self.centersArray = []
+    def calc_centers(self):
+        self.centers = []
         for face in self.faces:
-            fcenter = vector([0, 0, 0])
+            fcenter = [0, 0, 0]
             for vidx in face:  # average vertex coords
-                fcenter = fcenter + vector(self.vertices[vidx])
-            self.centersArray.append(fcenter.mult(1.0 / len(face)).list())
+                fcenter = add(fcenter, self.vertices[vidx])
+            self.centers.append(mult(1.0 / len(face), fcenter))
         # return face - ordered array  of  centroids
-        return self.centersArray
+        return self.centers
 
     def traverse(self):
         for face in self.faces:
@@ -92,7 +96,7 @@ class polyflag():
             self.flags[faceName] = {}
         self.flags[faceName][vertName1] = vertName2
 
-    def topoly(self):
+    def topoly(self, name='unknown polyhedron'):
 
         vertices, faces = [], []
 
@@ -122,7 +126,7 @@ class polyflag():
                     print("Bad flag spec, have a neverending face:", i, self.flags[i])
                     break
 
-        return polyhedron(name='unknown polyhedron', vertices=vertices, faces=faces)
+        return polyhedron(name=name, vertices=vertices, faces=faces)
 
 
 if __name__ == '__main__':

@@ -7,7 +7,6 @@ from rendererGL import RendererGL
 from seeds import prism, antiprism, tetrahedron, cube, icosahedron, octahedron, dodecahedron, johnson_poly, cupola, \
     anticupola
 from transform import transform
-from vector import vector
 from color import color
 
 
@@ -18,8 +17,11 @@ class PolyhedronGL_widget(RendererGL):
 
     color_bronze = (200, 132, 102)
 
-    scale = 0.3
+    scale = 0.34
     main_window = None
+
+    needs_compile = True
+    gl_compiled_list = 1
 
     def __init__(self, main_window, poly):
         super(PolyhedronGL_widget, self).__init__()
@@ -46,6 +48,7 @@ class PolyhedronGL_widget(RendererGL):
             gl.glEnd()
 
         def draw_faces(gl):
+            gl.glScalef(self.scale, self.scale, self.scale)
             for ic, face in enumerate(self.poly.faces):
                 gl.glBegin(gl.GL_POLYGON)
                 normal = self.poly.normals[ic]  # 1 normal per face
@@ -55,8 +58,20 @@ class PolyhedronGL_widget(RendererGL):
                     gl.glNormal3fv(normal)
                 gl.glEnd()
 
-        gl.glScalef(self.scale, self.scale, self.scale)
-        draw_faces(gl)
+        def compile(gl):
+            if self.needs_compile:
+                gl.glNewList(self.gl_compiled_list, gl.GL_COMPILE)
+
+                draw_faces(gl)
+
+                gl.glEndList()
+                self.needs_compile = False
+
+        def draw_list(gl):
+            compile(gl)
+            gl.glCallList(self.gl_compiled_list)
+
+        draw_list(gl)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
@@ -64,6 +79,7 @@ class PolyhedronGL_widget(RendererGL):
         elif event.key() == Qt.Key_Plus:
             color.set_random()
             self.poly.update_colors()
+            self.needs_compile=True
             self.update()
         event.accept()
 
@@ -80,5 +96,8 @@ class Main(QMainWindow):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
-    Main(transform.propellor(transform.kisN(dodecahedron(),0,0.1)))
+    p = transform.perspectiva1(cube())
+    # p=dodecahedron()
+    Main(p)
+
     app.exec_()
