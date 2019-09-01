@@ -3,7 +3,7 @@ from math import sqrt, floor, log10
 # helper funcs.
 midName = lambda v1, v2: f'{v1}_{v2}' if v1 < v2 else f'{v2}_{v1}'
 midpoint = lambda vec1, vec2: mult(0.5, add(vec1, vec2))
-unit = lambda v: mult(1. / sqrt(mag2(v)), v)
+unit = lambda v: mult(1. / (sqrt(mag2(v)) if mag2(v)!=0 else 1), v)
 tween = lambda vec1, vec2, t: [((1 - t) * vec1[0]) + (t * vec2[0]),
                                ((1 - t) * vec1[1]) + (t * vec2[1]),
                                ((1 - t) * vec1[2]) + (t * vec2[2])]

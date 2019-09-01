@@ -8,6 +8,8 @@ from seeds import prism, antiprism, tetrahedron, cube, icosahedron, octahedron, 
     anticupola
 from transform import transform
 from color import color
+import polyhedron
+import parser
 
 
 class PolyhedronGL_widget(RendererGL):
@@ -17,7 +19,7 @@ class PolyhedronGL_widget(RendererGL):
 
     color_bronze = (200, 132, 102)
 
-    scale = 0.34
+    scale = 0.3
     main_window = None
 
     needs_compile = True
@@ -79,7 +81,7 @@ class PolyhedronGL_widget(RendererGL):
         elif event.key() == Qt.Key_Plus:
             color.set_random()
             self.poly.update_colors()
-            self.needs_compile=True
+            self.needs_compile = True
             self.update()
         event.accept()
 
@@ -93,11 +95,29 @@ class Main(QMainWindow):
         self.show()
 
 
-if __name__ == '__main__':
+def test():  # fixed transformation
     app = QApplication(sys.argv)
 
-    p = transform.perspectiva1(cube())
+    p = transform.scale(transform.hollow(transform.quinto(transform.quinto(transform.quinto((johnson_poly(89)))))))
     # p=dodecahedron()
+    # p = transform.scale(transform.chamfer(dodecahedron()))
     Main(p)
 
     app.exec_()
+
+
+def main(poly_def: str) -> polyhedron:
+    p = parser.parse(poly_def)
+
+    if p is None:
+        print(f'syntax error in {poly_def}')
+    else:
+
+        app = QApplication(sys.argv)
+        Main(p)
+
+        app.exec_()
+
+
+if __name__ == '__main__':
+    main('wpD')

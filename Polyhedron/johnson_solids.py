@@ -4713,17 +4713,20 @@ johnson_polyhedra = {
 
 from polyhedron import polyhedron
 
-def johnson_poly(name):
-    j = johnson_polyhedra[name]
-    return polyhedron(name=name, vertices=j[1], faces=j[0] )
 
-if __name__=='__main__':
-    jpl=[]
+def johnson_poly(n: int) -> polyhedron:
+    name = f'J{n}'
+    j = johnson_polyhedra[name]
+    return polyhedron(name=name, vertices=j[1], faces=j[0])
+
+
+if __name__ == '__main__':
+    jpl = []
     for jx in johnson_polyhedra:
         j = johnson_polyhedra[jx]
 
         f, v = j
 
-        jp=johnson_poly(jx)
+        jp = johnson_poly(jx)
         print(f'{jx:3} {len(v):3} {len(f)} {jp.traverse()}')
         jpl.append(jp)

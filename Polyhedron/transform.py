@@ -139,7 +139,7 @@ class transform():
     # ------------------------------------------------------------------------------------------
     # geometric reflection through origin
     @staticmethod
-    def reflection(poly: polyhedron) -> polyhedron:
+    def reflect(poly: polyhedron) -> polyhedron:
         for i, v in enumerate(poly.vertices):
             poly.vertices[i] = mult(-1, v)
         for i, _ in enumerate(poly.faces):
@@ -160,7 +160,9 @@ class transform():
     @staticmethod
     def dual(poly: polyhedron) -> polyhedron:
         flag = polyflag()
+
         face = [{} for _ in range(len(poly.vertices))]
+
         for i, f in enumerate(poly.faces):
             v1 = f[-1]
             for v2 in f:
@@ -214,7 +216,7 @@ class transform():
     @staticmethod
     def chamfer(poly: polyhedron, dist=0.5) -> polyhedron:
 
-        normals = [calc_normal([poly.vertices[ic] for ic in f]) for f in poly.faces]
+        normals = poly.normals # [calc_normal([poly.vertices[ic] for ic in f]) for f in poly.faces]
 
         flag = polyflag()
 
@@ -332,8 +334,9 @@ class transform():
         for i, p in enumerate(poly.vertices):
             flag.newV(f'v{i}', p)
 
-        normals = poly.calc_normals()
-        centers = poly.calc_centers()
+        normals = poly.normals  # poly.calc_normals()
+        centers = poly.centers  # poly.calc_centers()
+
         for i, f in enumerate(poly.faces):
             if len(f) == n or n == 0:
                 for v in f:
@@ -386,8 +389,8 @@ class transform():
     @staticmethod
     def hollow(poly: polyhedron, inset_dist=0.5, thickness=0.2) -> polyhedron:
         dualnormals = transform.dual(poly).calc_normals()
-        normals = poly.calc_normals()
-        centers = poly.calc_centers()
+        normals = poly.normals # poly.calc_normals()
+        centers = poly.centers # poly.calc_centers()
 
         flag = polyflag()
 

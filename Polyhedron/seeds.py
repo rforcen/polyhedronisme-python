@@ -119,10 +119,50 @@ def dodecahedron():
                        [10, 11, 17, 19, 16], [12, 13, 16, 19, 18], [14, 15, 18, 19, 17]])
 
 
-def cupola(n, alpha, height):
-    if n is None: n = 3
-    if alpha is None: alpha = 0.0
+def sphere(sec: int = 20):
+    rad = 1.0
+    du = dv = 1. / sec
+    pi2 = pi * 2.0
 
+    vertices = []
+
+    for r in range(sec+1):
+        v = r * dv  # [0, 1]
+        theta1 = v * pi  # [0, PI]
+        xt = -sin(theta1)
+        yt = cos(theta1)
+        zt = 0.0
+        xn, yn, zn = xt, yt, zt
+
+        for c in range(sec+1):
+            u = c * du  # [0, 1]
+            theta2 = u * pi2  # [0, 2PI]
+            x, y, z = xn, yn, zn  # xyz = n
+            cosRY = cos(theta2)
+            sinRY = sin(theta2)  # xyz.rotateY
+
+            xt = (x * cosRY) + (z * sinRY)
+            zt = (x * -sinRY) + (z * cosRY)
+            x = xt
+            z = zt
+
+            x *= rad
+            y *= rad
+            z *= rad  # xyz *= rad
+
+            vertices.append([x, y, z])
+    # add faces
+    faces = []
+    cl = sec + 1
+    for r in range(sec):
+        off = r * cl
+        for c in range(sec):
+            faces.append([off + c, off + c + 1, off + (c + 1 + cl), off + (c + 0 + cl)])
+
+    return polyhedron('S', vertices=vertices, faces=faces)
+
+
+def cupola(n=3, alpha=0.0, height=0):
     if n < 2:
         return polyhedron()
 
@@ -131,7 +171,7 @@ def cupola(n, alpha, height):
     rb = s / 2 / sin(pi / 2 / n)
     rt = s / 2 / sin(pi / n)
 
-    if height is None:
+    if height == 0:
         height = (rb - rt)
         # set correct height for regularity for n=3,4,5
         if 2 <= n <= 5:
@@ -155,10 +195,7 @@ def cupola(n, alpha, height):
     return polyhedron(name=f'U{n}', vertices=vertices, faces=faces)
 
 
-def anticupola(n, alpha, height):
-    if n is None: n = 3
-    if alpha is None: alpha = 0.0
-
+def anticupola(n=3, alpha=0, height=0):
     if n < 3:
         return polyhedron()
 
@@ -167,7 +204,7 @@ def anticupola(n, alpha, height):
     rb = s / 2 / sin(pi / 2 / n)
     rt = s / 2 / sin(pi / n)
 
-    if height is None:
+    if height == 0:
         height = (rb - rt)
 
     # init 3N vertices
@@ -186,3 +223,8 @@ def anticupola(n, alpha, height):
         faces.append([2 * n + (i + 1) % n, 2 * n + (i) % n, (2 * i + 1) % (2 * n)])
 
     return polyhedron(name=f'U{n}', vertices=vertices, faces=faces)
+
+
+def johnson(n):
+    import johnson_solids
+    return johnson_solids.johnson_poly(n=n)
