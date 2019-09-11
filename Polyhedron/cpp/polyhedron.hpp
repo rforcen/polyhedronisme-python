@@ -113,6 +113,12 @@ public:
         for (auto ic:face) centroid+=vertexes[ic];
         return centroid/=face.size();
     }
+    
+    // sets
+    void set_faces(Faces &faces) {
+        this->faces=faces;
+        this->n_faces=faces.size();
+    }
 
     // gets
     string get_name() { return name; }
@@ -145,7 +151,7 @@ public:
     void print_stat() {
         recalc();
         
-        printf("name:%s\n", name.c_str());
+        printf("name    : %s\n", name.c_str());
         printf("vertices: %ld\n", vertexes.size());
         printf("faces   : %ld\n", faces.size());
         

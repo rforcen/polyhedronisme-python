@@ -43,13 +43,13 @@ public:
         Faces faces(flags.size());
 
         int ctr = 0; // first number the vertices
-        for (auto &i : vertidxs) {
+        for (auto i : vertidxs) {
             vertexes[ctr]=vertices[i.first]; // store in array
             vertidxs[i.first] = ctr++;
         }
         
         ctr = 0;
-        for (auto &flag : flags) {
+        for (auto flag : flags) {
             
             auto &face = flags[flag.first];
             string &v0 = (*face.begin()).second; // first item

@@ -44,6 +44,7 @@ public:
             case 'Y': p=Seeds::pyramid(n); break;
             case 'U': p=Seeds::cupola(n); break;
             case 'V': p=Seeds::anticupola(n); break;
+            case 'J': p=Seeds::johnson(n); break;
             default : return p; // wrong base
         }
         

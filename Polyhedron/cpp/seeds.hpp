@@ -203,7 +203,7 @@ public:
         case 'P': return prism(n);
         case 'A': return antiprism(n);
         case 'U': return cupola(n, alpha, height);
-        case 'X': return anticupola(n, alpha, height);
+        case 'V': return anticupola(n, alpha, height);
         case 'J': return johnson(n);
         default: return Polyhedron();
         }

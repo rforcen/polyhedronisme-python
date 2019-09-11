@@ -25,12 +25,10 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "Polyflag::topoly():polyflag.hpp">
-         <PersistentStrings>
-            <PersistentString
-               value = "i">
-            </PersistentString>
-         </PersistentStrings>
+         contextName = "PolyOperations::dual(Polyhedron):poly_operations.hpp">
+      </ContextState>
+      <ContextState
+         contextName = "PolyOperations::intersect(std::__1::vector&lt;int, std::__1::allocator&lt;int&gt; &gt;&amp;, std::__1::vector&lt;int, std::__1::allocator&lt;int&gt; &gt;&amp;, std::__1::vector&lt;int, std::__1::allocator&lt;int&gt; &gt;&amp;):poly_operations.hpp">
       </ContextState>
    </ContextStates>
 </VariablesViewState>

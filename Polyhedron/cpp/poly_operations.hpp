@@ -44,7 +44,7 @@ public:
         Polyflag flag;
         
         for (size_t i = 0; i < poly.n_vertex; i++) // each old vertex is a new vertex
-            flag.newV(to_string(i), poly.vertexes[i]);
+            flag.newV("v"+str(i), poly.vertexes[i]);
         
         auto normals = poly.get_normals();
         auto centers = poly.get_centers();
@@ -53,21 +53,21 @@ public:
         
         for (size_t i = 0; i < poly.n_faces; i++) {
             auto &f = poly.faces[i];
-            string v1 = to_string(f.back()); // last item
+            string v1 = "v"+str(f.back()); // last item
             
             for (auto &v : f) {
-                string v2 = to_string(v);
+                string v2 = "v"+str(v);
                 if (f.size() == (size_t)n || n == 0) {
                     foundAny = true;
-                    string apex = "apex"+to_string(i);
-                    string fname = to_string(i) + v1;
+                    string apex = "apex"+str(i);
+                    string fname = str(i) + v1;
                     // new vertices in centers of n-sided face
                     flag.newV(apex, centers[i] + (normals[i] * apexdist));
                     flag.newFlag(fname,   v1,   v2); // the old edge of original face
                     flag.newFlag(fname,   v2, apex); // up to apex of pyramid
                     flag.newFlag(fname, apex,   v1); // and back down again
                 } else {
-                    flag.newFlag(to_string(i), v1, v2);  // same old flag, if non-n
+                    flag.newFlag(str(i), v1, v2);  // same old flag, if non-n
                 }
                 // current becomes previous
                 v1 = v2;
@@ -77,7 +77,7 @@ public:
         if (!foundAny) printf("kisN: No %d-fold components were found.\n", n);
         
         auto newpoly = flag.topoly();
-        newpoly.name = "k" + (n ? to_string(n):"") + poly.name;
+        newpoly.name = "k" + (n ? str(n):"") + poly.name;
         return newpoly;
     };
     
@@ -104,9 +104,9 @@ public:
                 
                 // two new flags:
                 // One whose face corresponds to the original f:
-                flag.newFlag("orig"+to_string(i),  midName(v1,v2), midName(v2,v3));
+                flag.newFlag("orig"+str(i),  midName(v1,v2), midName(v2,v3));
                 // Another flag whose face  corresponds to (the truncated) v2:
-                flag.newFlag("dual"+to_string(v2), midName(v2,v3), midName(v1,v2));
+                flag.newFlag("dual"+str(v2), midName(v2,v3), midName(v1,v2));
                 // shift over one
                 v1=v2; v2=v3;
             }
@@ -129,12 +129,12 @@ public:
         Polyflag flag;
         
         for (size_t i = 0; i < poly.n_vertex; i++) // each old vertex is a new vertex
-            flag.newV("v"+i2s(i), unit(poly.vertexes[i]));
+            flag.newV("v"+str(i), unit(poly.vertexes[i]));
         
         
         Vertexes centers = poly.get_centers(); // new vertices in center of each face
         for (size_t i = 0; i < poly.n_faces; i++)
-            flag.newV("center"+i2s(i), unit(centers[i]));
+            flag.newV("center"+str(i), unit(centers[i]));
         
         for (size_t i = 0; i < poly.n_faces; i++) {
             auto &f = poly.faces[i];
@@ -143,10 +143,10 @@ public:
             auto v1=f[flen-2], v2=f[flen-1]; //  [v1, v2] = f.slice(-2);
             
             for (size_t j = 0; j < flen; j++) {
-                auto sv1=i2s(v1), sv2=i2s(v2), si=i2s(i);
+                auto sv1=str(v1), sv2=str(v2), si=str(i);
                 auto v = f[j];
                 auto v3 = v;
-                auto sv3=i2s(v3);
+                auto sv3=str(v3);
                 
                 flag.newV(sv1+"~"+sv2, oneThird(poly.vertexes[v1], poly.vertexes[v2]));  // new v in face
                 
@@ -177,7 +177,7 @@ public:
         Polyflag flag;
         
         for (size_t i = 0; i < poly.n_vertex; i++) // each old vertex is a new vertex
-            flag.newV("v"+i2s(i), unit(poly.vertexes[i]));
+            flag.newV("v"+str(i), unit(poly.vertexes[i]));
         
         for (size_t i = 0; i < poly.n_faces; i++) {
             
@@ -187,7 +187,7 @@ public:
             
             for (auto &v : f) {
                 auto v3 = v;
-                auto sv1=i2s(v1), sv2=i2s(v2), si=i2s(i), sv3=i2s(v3);
+                auto sv1=str(v1), sv2=str(v2), si=str(i), sv3=str(v3);
                 
                 flag.newV(sv1+"~"+sv2, oneThird(poly.vertexes[v1], poly.vertexes[v2]));  // new v in face, 1/3rd along edge
                 auto fname = si+"f"+sv2;
@@ -235,41 +235,42 @@ public:
     //
     static Polyhedron dual(Polyhedron poly) {
         Polyflag flag;
-        map<int,map<string,string>> face;
+        vector<map<string, string>> face(poly.n_vertex); // make table of face as fn of edge
         
         for (size_t i = 0; i < poly.n_faces; i++) {
             auto &f = poly.faces[i];
-            auto v1 = f.back(); //previous vertex
-            for (auto &v2 : f) {
+            auto v1 = f.back(); //previous vertex index
+            for (auto v2 : f) {
                 // THIS ASSUMES that no 2 faces that share an edge share it in the same orientation!
                 // which of course never happens for proper manifold meshes, so get your meshes right.
-                face[v1]["v"+i2s(v2)] = i2s(i);
-                v1=v2;
+                face[v1][str("v",v2)] = str(i);
+                v1=v2; // current becomes previous
             }
-        } // current becomes previous
+        }
         
         auto centers = poly.get_centers();
         for (size_t i = 0; i < poly.n_faces; i++)
-            flag.newV(i2s(i),centers[i]);
+            flag.newV(str(i), centers[i]);
         
         for (size_t i = 0; i < poly.n_faces; i++) {
             auto &f = poly.faces[i];
             auto v1 = f.back(); //previous vertex
             for (auto v2 : f) {
-                flag.newFlag(i2s(v1), face[v2]["v"+i2s(v1)], i2s(i));
-                v1=v2;
+                flag.newFlag(str(v1), face[v2][str("v",v1)], str(i));
+                v1=v2; // current becomes previous
             }
-        } // current becomes previous
+        }
         
         auto dpoly = flag.topoly(); // build topological dual from flags
         
         // match F index ordering to V index ordering on dual
-        Faces sortF(dpoly.n_faces);
-        for (auto &f : dpoly.faces) {
-            auto k = intersect(poly.faces[f[0]], poly.faces[f[1]], poly.faces[f[2]]);
-            sortF[k] = f;
+        Faces sortF(poly.n_vertex);
+        auto &pf=poly.faces;
+        for (auto f : dpoly.faces) {
+            auto k = intersect(pf[f[0]], pf[f[1]], pf[f[2]]);
+            if (k!=-1) sortF[k] = f;
         }
-        dpoly.faces = sortF;
+        dpoly.set_faces(sortF);
         
         if (poly.name[0] != 'd')     dpoly.name = "d"+poly.name;
         else                         dpoly.name = poly.name.substr(1, string::npos);
@@ -305,16 +306,16 @@ public:
         for (size_t i = 0; i < poly.n_faces; i++) {
             auto &f = poly.faces[i];
             auto v1 = f.back();
-            auto v1new = i2s(i) + "_" + i2s(v1);
+            auto v1new = str(i) + "_" + str(v1);
             
             for (auto &v2 : f) {
                 // TODO: figure out what distances will give us a planar hex face.
                 // Move each old vertex further from the origin.
-                flag.newV(i2s(v2), (1.0 + dist) * poly.vertexes[v2]);
+                flag.newV(str(v2), (1.0 + dist) * poly.vertexes[v2]);
                 // Add a new vertex, moved parallel to normal.
-                auto v2new = i2s(i) + "_" + i2s(v2);
+                auto v2new = str(i) + "_" + str(v2);
                 
-                auto sv1=i2s(v1), sv2=i2s(v2), si=i2s(i);
+                auto sv1=str(v1), sv2=str(v2), si=str(i);
                 
                 flag.newV(v2new, poly.vertexes[v2] + (dist*1.5 * normals[i]));
                 // Four new flags:
@@ -352,7 +353,7 @@ public:
         Polyflag flag;
         
         for (size_t i = 0; i < poly.n_vertex; i++) // each old vertex is a new vertex
-            flag.newV("v"+i2s(i), unit(poly.vertexes[i]));
+            flag.newV("v"+str(i), unit(poly.vertexes[i]));
         
         // new vertices around center of each face
         auto centers = poly.get_centers();
@@ -368,7 +369,7 @@ public:
             for (size_t j = 0; j < flen; j++) {
                 auto v = f[j];
                 auto v3 = v;
-                auto sv1=i2s(v1), sv2=i2s(v2), sv3=i2s(v3), si=i2s(i);
+                auto sv1=str(v1), sv2=str(v2), sv3=str(v3), si=str(i);
                 
                 // New vertex along edge
                 auto v1_2 = oneThird(poly.vertexes[v1], poly.vertexes[v2]);
@@ -416,7 +417,7 @@ public:
             
             for (auto v3 : f) {
                 
-                auto sv1=i2s(v1), sv2=i2s(v2), si=i2s(i);
+                auto sv1=str(v1), sv2=str(v2), si=str(i);
                 
                 // for each face-corner, we make two new points:
                 auto midpt = midpoint(poly.vertexes[v1], poly.vertexes[v2]);
@@ -459,7 +460,7 @@ public:
         Polyflag flag;
         
         for (size_t i = 0; i < poly.n_vertex; i++) // each old vertex is a new vertex
-            flag.newV("v"+i2s(i), poly.vertexes[i]);
+            flag.newV("v"+str(i), poly.vertexes[i]);
         
         auto normals = poly.get_normals();
         auto centers = poly.get_centers();
@@ -468,7 +469,7 @@ public:
             auto &f = poly.faces[i];
             if (f.size() == (size_t)n || n == 0) {
                 for (auto &v : f) {
-                    flag.newV("f"+i2s(i)+"v"+i2s(v), tween(poly.vertexes[v],centers[i],inset_dist) +
+                    flag.newV("f"+str(i)+"v"+str(v), tween(poly.vertexes[v],centers[i],inset_dist) +
                               (popout_dist * normals[i]));
                 }
             }
@@ -477,10 +478,10 @@ public:
         bool foundAny = false;    // alert if don't find any
         for (size_t i = 0; i < poly.n_faces; i++) {
             auto f = poly.faces[i];
-            auto v1 = "v"+i2s(f.back());
+            auto v1 = "v"+str(f.back());
             for (auto &v : f) {
-                auto v2 = "v"+i2s(v);
-                auto si=i2s(i);
+                auto v2 = "v"+str(v);
+                auto si=str(i);
                 
                 if (f.size() == (size_t)n || n == 0) {
                     foundAny = true;
@@ -502,7 +503,7 @@ public:
             printf("No %d - fold components were found.", n);
         
         auto newpoly = flag.topoly();
-        newpoly.name = "n" + (n ? to_string(n):"") + poly.name;
+        newpoly.name = "n" + (n ? str(n):"") + poly.name;
         return newpoly;
     }
     
@@ -511,7 +512,7 @@ public:
     // for compatibility with older operator spec
     static Polyhedron extrudeN(Polyhedron poly, int n=0){
         auto newpoly = insetN(poly, n, 0.0, 0.3);
-        newpoly.name = "x" + (n ? to_string(n):"") + poly.name;
+        newpoly.name = "x" + (n ? str(n):"") + poly.name;
         return newpoly;
     }
     
@@ -519,7 +520,7 @@ public:
     // ------------------------------------------------------
     static Polyhedron loft(Polyhedron poly, int n=0, float alpha=0) {
         auto newpoly = insetN(poly, n, alpha, 0.0);
-        newpoly.name = "l" + (n ? to_string(n):"") + poly.name;
+        newpoly.name = "l" + (n ? str(n):"") + poly.name;
         return newpoly;
     }
     
@@ -533,17 +534,17 @@ public:
         Polyflag flag;
         for (size_t i = 0; i < poly.n_vertex; i++) { // each old vertex is a new vertex
             auto p = poly.vertexes[i];
-            auto si=i2s(i);
+            auto si=str(i);
             
             flag.newV("v"+si, p);
             flag.newV("downv"+si,  p - thickness * dualnormals[i]);
         }
         // new inset vertex for every vert in face
         for (size_t i = 0; i < poly.n_faces; i++) {
-            auto si=i2s(i);
+            auto si=str(i);
             auto &f = poly.faces[i];
             for (auto &v : f) {
-                auto sv=i2s(v);
+                auto sv=str(v);
                 
                 flag.newV("fin"+si+"v"+sv, tween(poly.vertexes[v], centers[i], inset_dist));
                 flag.newV("findown"+si+"v"+sv, tween(poly.vertexes[v], centers[i], inset_dist) - (thickness * normals[i]));
@@ -552,11 +553,11 @@ public:
         
         for (size_t i = 0; i < poly.n_faces; i++) {
             auto &f = poly.faces[i];
-            string v1 = "v"+i2s(f.back());
-            auto si=i2s(i);
+            string v1 = "v"+str(f.back());
+            auto si=str(i);
             
             for (auto &v : f) {
-                auto sv=i2s(v), v2 = "v"+sv;
+                auto sv=str(v), v2 = "v"+sv;
                 
                 auto fname = si + v1, s1=si+v1, s2=si+v2;
                 flag.newFlag(fname,      v1,       v2);
@@ -593,18 +594,18 @@ public:
         
         Polyflag flag;
         for (size_t i = 0; i < poly.n_vertex; i++)  // each old vertex is a new vertex
-            flag.newV("v"+i2s(i), poly.vertexes[i]);
+            flag.newV("v"+str(i), poly.vertexes[i]);
         
         // iterate over triplets of faces v1,v2,v3
         for (size_t i = 0; i < poly.n_faces; i++) {
             auto &f = poly.faces[i];
             auto flen=f.size();
-            auto v1 = "v"+i2s(f[flen-2]), v2 = "v"+i2s(f[flen-1]);
+            auto v1 = "v"+str(f[flen-2]), v2 = "v"+str(f[flen-1]);
             auto vert1 = poly.vertexes[f[flen-2]], vert2 = poly.vertexes[f[flen-1]];
-            auto si=i2s(i);
+            auto si=str(i);
             
             for (auto &v : f) {
-                auto v3 = "v"+i2s(v);
+                auto v3 = "v"+str(v);
                 auto vert3 = poly.vertexes[v];
                 auto v12=v1+"~"+v2; // names for "oriented" midpoints
                 auto v21=v2+"~"+v1;
@@ -666,7 +667,7 @@ public:
             for (int i = 0; i <= n; i++) {
                 for (int j = 0; j+i <= n; j++) {
                     auto v = (v1 + (i * 1.0 / n) * v21) + (j * 1.0 / n * v31);
-                    vmap["v"+i2s(fn)+"-"+i2s(i)+"-"+i2s(j)] = pos++;
+                    vmap["v"+str(fn)+"-"+str(i)+"-"+str(j)] = pos++;
                     newVs.push_back(v);
                 }
             }
@@ -696,26 +697,27 @@ public:
         for (size_t fn = 0; fn < poly.n_faces; fn++) {
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j+i < n; j++) {
-                    faces.push_back(Face{uniqmap[vmap["v"+i2s(fn)+"-"+i2s(i)+"-"+i2s(j)]],
-                        uniqmap[vmap["v"+i2s(fn)+"-"+i2s(i+1)+"-"+i2s(j)]],
-                        uniqmap[vmap["v"+i2s(fn)+"-"+i2s(i)+"-"+i2s(j+1)]]});
+                    faces.push_back(Face{uniqmap[vmap["v"+str(fn)+"-"+str(i)+"-"+str(j)]],
+                        uniqmap[vmap["v"+str(fn)+"-"+str(i+1)+"-"+str(j)]],
+                        uniqmap[vmap["v"+str(fn)+"-"+str(i)+"-"+str(j+1)]]});
                 }
             }
             for (auto i = 1; i < n; i++) {
                 for (auto j = 0; j+i < n; j++) {
-                    faces.push_back(Face{uniqmap[vmap["v"+i2s(fn)+"-"+i2s(i)+"-"+i2s(j)]],
-                        uniqmap[vmap["v"+i2s(fn)+"-"+i2s(i)+"-"+i2s(j+1)]],
-                        uniqmap[vmap["v"+i2s(fn)+"-"+i2s(i-1)+"-"+i2s(j+1)]]});
+                    faces.push_back(Face{uniqmap[vmap["v"+str(fn)+"-"+str(i)+"-"+str(j)]],
+                        uniqmap[vmap["v"+str(fn)+"-"+str(i)+"-"+str(j+1)]],
+                        uniqmap[vmap["v"+str(fn)+"-"+str(i-1)+"-"+str(j+1)]]});
                 }
             }
         }
         
         // Create new polygon out of faces and unique vertices.
-        return Polyhedron("u"+i2s(n)+poly.name, uniqVs, faces);
+        return Polyhedron("u"+str(n)+poly.name, uniqVs, faces);
     }
 private:
-    static inline string i2s(size_t i) { return to_string(i); }
-    static inline string midName(int v1, int v2) { return v1<v2 ? to_string(v1)+"_"+to_string(v2) : to_string(v2)+"_"+to_string(v1); }
+    static inline string str(size_t i) { return to_string(i); }
+    static inline string str(string s, size_t i) { return s+str(i); }
+    static inline string midName(int v1, int v2) { return v1<v2 ? str(v1)+"_"+str(v2) : str(v2)+"_"+str(v1); }
     static inline Vertex midpoint(Vertex vec1, Vertex vec2) { return (vec1+vec2)/2.; };
     static inline Vertex unit(Vertex v) { return simd::normalize(v); }
     static inline Vertex oneThird(Vertex &vec1, Vertex &vec2) { return tween(vec1, vec2, 1/3.); }
@@ -726,7 +728,7 @@ private:
                 if (s1 == s2)
                     for (auto s3 : set3)
                         if (s1 == s3)  return s1;
-        return 0; // empty intersection
+        return -1; // empty intersection
     }
     static Vertex calcCentroid(Vertexes vertices) {
         // running sum of vertex coords

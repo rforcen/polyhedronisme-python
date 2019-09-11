@@ -114,5 +114,5 @@ def main(poly_def: str) -> polyhedron:
 
 
 if __name__ == '__main__':
-    main('qqqqqD')
+    main('dD')
     # test()

@@ -6,11 +6,11 @@ import numpy
 class polyhedron():
     name = ''
     vertices = None
-    faces = []
-    normals = []
-    areas = []
-    colors = []
-    centers = []
+    faces = None
+    normals = None
+    areas = None
+    colors = None
+    centers = None
 
     def __init__(self, name='', vertices=[], faces=[]):
         if vertices != []:
@@ -67,7 +67,7 @@ class polyhedron():
         self.calc_colors()
 
     def calc_centers(self):
-        return [numpy.sum(self.vertices[face], axis=0) * (1.0 / len(face)) for face in self.faces]
+        return [numpy.sum(self.vertices[face], axis=0) / len(face) for face in self.faces]
 
     def traverse(self):
         for face in self.faces:

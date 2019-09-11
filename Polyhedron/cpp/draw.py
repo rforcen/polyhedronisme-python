@@ -43,22 +43,17 @@ class PolyhedronGL_widget(RendererGL):
         print(f'done!, # vertexes:{len(self.vertexes)}, # faces:{len(self.faces)}')
 
     def draw(self, gl):
-        def draw_centers(gl):
-            gl.glPointSize(8)
-            gl.glColor3fv(self.color_bronze)
 
-            gl.glBegin(gl.GL_POINTS)
-            for ic, _ in enumerate(self.poly.faces):
-                gl.glVertex3fv(self.poly.centersArray[ic])
-            gl.glEnd()
+        def draw_mesh(gl):
 
-        def draw_faces(gl):
             gl.glEnable(gl.GL_RESCALE_NORMAL)
             gl.glScalef(self.scale, self.scale, self.scale)
+
             for ic, face in enumerate(self.faces):
                 gl.glBegin(gl.GL_POLYGON)
                 normal = self.normals[ic]  # 1 normal per face
                 gl.glColor3fv(self.colors[ic])  # face color
+
                 for ic in face:
                     gl.glVertex3fv(self.vertexes[ic])
                     gl.glNormal3fv(normal)
@@ -68,7 +63,7 @@ class PolyhedronGL_widget(RendererGL):
             if self.needs_compile:
                 gl.glNewList(self.gl_compiled_list, gl.GL_COMPILE)
 
-                draw_faces(gl)
+                draw_mesh(gl)
 
                 gl.glEndList()
                 self.needs_compile = False
@@ -101,7 +96,7 @@ class Main(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    Main('cxdO')
+    Main('aqqD')
 
     app.exec_()
 

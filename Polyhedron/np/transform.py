@@ -183,8 +183,11 @@ class transform():
         # match F index ordering to V index ordering on dual
         sortF = [[] for _ in range(len(dpoly.faces))]
         for f in dpoly.faces:
-            k = intersect(poly.faces[f[0]], poly.faces[f[1]], poly.faces[f[2]])
-            sortF[k] = f
+            # k = intersect(poly.faces[f[0]], poly.faces[f[1]], poly.faces[f[2]])
+            k = set(poly.faces[f[0]]).intersection(set(poly.faces[f[1]]), set(poly.faces[f[2]]))
+            if bool(k):
+                sortF[k.pop()] = f
+
         dpoly.faces = sortF
 
         if poly.name[0] != 'd':
