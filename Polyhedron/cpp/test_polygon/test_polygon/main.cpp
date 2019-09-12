@@ -12,7 +12,7 @@
 #include "parser.hpp"
 
 void test02() {
-    auto p=Parser::parse("qD");
+    auto p=Parser::parse("ddD");
     p.recalc();
     p.print_stat();
 }

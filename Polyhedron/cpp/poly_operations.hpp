@@ -264,16 +264,17 @@ public:
         auto dpoly = flag.topoly(); // build topological dual from flags
         
         // match F index ordering to V index ordering on dual
-        Faces sortF(poly.n_vertex);
-        auto &pf=poly.faces;
-        for (auto f : dpoly.faces) {
-            auto k = intersect(pf[f[0]], pf[f[1]], pf[f[2]]);
-            if (k!=-1) sortF[k] = f;
-        }
-        dpoly.set_faces(sortF);
-        
-        if (poly.name[0] != 'd')     dpoly.name = "d"+poly.name;
-        else                         dpoly.name = poly.name.substr(1, string::npos);
+        // not always working as poly is not planarized
+//        Faces sortF(poly.n_vertex);
+//        auto &pf=poly.faces;
+//        for (auto &f : dpoly.faces) {
+//            auto k = intersect(pf[f[0]], pf[f[1]], pf[f[2]]);
+//            if (k!=-1) sortF[k] = f;
+//        }
+//        dpoly.set_faces(sortF);
+
+        auto &pn=poly.name;
+        dpoly.name = (pn[0] != 'd') ? "d"+pn : pn.substr(1, string::npos);
         
         return dpoly;
     }

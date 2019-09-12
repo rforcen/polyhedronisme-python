@@ -96,7 +96,7 @@ class Main(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    Main('aqqD')
+    Main('aaqwqqT')
 
     app.exec_()
 
